@@ -1,5 +1,5 @@
 [workspace]
-members = ["src/setup", "src/led-roulette"]
+members = ["src/setup", "src/led-roulette", "src/uart"]
 
 [profile.release]
 codegen-units = 1

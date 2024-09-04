@@ -3,6 +3,7 @@
 
 use core::fmt::Write;
 use cortex_m_rt::entry;
+use heapless::Vec;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -51,9 +52,24 @@ fn main() -> ! {
         UartePort::new(serial)
     };
 
+    let mut buffer: Vec<u8, 32> = Vec::new();
     loop {
-        let byte = nb::block!(serial.read()).unwrap();
-        write!(serial, "{}", byte as char);
+        buffer.clear();
+        loop {
+            let byte = nb::block!(serial.read()).unwrap();
+            if buffer.push(byte).is_err() {
+                write!(serial, "Buffer full, flushing");
+                break;
+            }
+
+            if byte == 13 {
+                for byte in buffer.iter().rev().chain(&[b'\n', b'\r']) {
+                    nb::block!(serial.write(*byte)).unwrap();
+                }
+                break;
+            }
+        }
+
         nb::block!(serial.flush());
     }
 }

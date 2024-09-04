@@ -53,6 +53,7 @@ fn main() -> ! {
 
     loop {
         let byte = nb::block!(serial.read()).unwrap();
-        rprintln!("{}", byte as char);
+        write!(serial, "{}", byte as char);
+        nb::block!(serial.flush());
     }
 }

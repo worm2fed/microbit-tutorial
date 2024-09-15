@@ -1,20 +1,36 @@
-#![deny(unsafe_code)]
 #![no_main]
 #![no_std]
 
+use core::{fmt::Write, str};
 use cortex_m_rt::entry;
+use heapless::Vec;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
+use lsm303agr::{AccelOutputDataRate, Lsm303agr};
 use microbit::hal::prelude::*;
 
 #[cfg(feature = "v1")]
-use microbit::{hal::twi, pac::twi0::frequency::FREQUENCY_A};
+use microbit::{
+    hal::twi,
+    hal::uart,
+    hal::uart::{Baudrate, Parity},
+    pac::twi0::frequency::FREQUENCY_A,
+};
 
 #[cfg(feature = "v2")]
-use microbit::{hal::twim, pac::twim0::frequency::FREQUENCY_A};
+use microbit::{
+    hal::twim,
+    hal::uarte,
+    hal::uarte::{Baudrate, Parity},
+    pac::twim0::frequency::FREQUENCY_A,
+};
+#[cfg(feature = "v2")]
+mod serial_setup;
+#[cfg(feature = "v2")]
+use serial_setup::UartePort;
 
-use lsm303agr::{AccelOutputDataRate, Lsm303agr};
+// use lsm303agr::{AccelOutputDataRate, Lsm303agr, MagOutputDataRate};
 
 #[entry]
 fn main() -> ! {
@@ -22,9 +38,28 @@ fn main() -> ! {
     let board = microbit::Board::take().unwrap();
 
     #[cfg(feature = "v1")]
+    let mut serial = {
+        uart::Uart::new(
+            board.UART0,
+            board.uart.into(),
+            Parity::EXCLUDED,
+            Baudrate::BAUD115200,
+        )
+    };
+    #[cfg(feature = "v1")]
     let mut i2c =
         { twi::Twi::new(board.TWI0, board.i2c.into(), FREQUENCY_A::K100) };
 
+    #[cfg(feature = "v2")]
+    let mut serial = {
+        let serial = uarte::Uarte::new(
+            board.UARTE0,
+            board.uart.into(),
+            Parity::EXCLUDED,
+            Baudrate::BAUD115200,
+        );
+        UartePort::new(serial)
+    };
     #[cfg(feature = "v2")]
     let i2c = {
         twim::Twim::new(
@@ -38,15 +73,41 @@ fn main() -> ! {
     sensor.init().unwrap();
     sensor.set_accel_odr(AccelOutputDataRate::Hz50).unwrap();
 
+    let mut buffer: Vec<u8, 16> = Vec::new();
     loop {
-        if sensor.accel_status().unwrap().xyz_new_data {
-            let data = sensor.accel_data().unwrap();
-            rprintln!(
-                "Acceleration: x = {}, y = {}, z = {}",
-                data.x,
-                data.y,
-                data.z
-            )
+        buffer.clear();
+        loop {
+            let byte = nb::block!(serial.read()).unwrap();
+            nb::block!(serial.write(byte)).unwrap();
+
+            if byte == 13 {
+                match str::from_utf8(&buffer) {
+                    Ok("accelerometer") => {
+                        if sensor.accel_status().unwrap().xyz_new_data {
+                            let data = sensor.accel_data().unwrap();
+                            write!(
+                                serial,
+                                "x = {}, y = {}, z = {}\r\n",
+                                data.x, data.y, data.z
+                            )
+                            .unwrap();
+                        }
+                    }
+                    Ok("magnetometer") => {
+                        write!(serial, "Not implemented\r\n").unwrap();
+                    }
+                    Ok(command) => {
+                        write!(serial, "Invalid command: {}\r\n", command)
+                            .unwrap()
+                    }
+                    Err(e) => write!(serial, "Error: {}\r\n", e).unwrap(),
+                }
+                break;
+            } else if buffer.push(byte).is_err() {
+                write!(serial, " <- Buffer full, flushing\r\n");
+                break;
+            }
+            nb::block!(serial.flush());
         }
     }
 }

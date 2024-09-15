@@ -208,6 +208,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "led-compass"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "embedded-hal",
+ "libm",
+ "lsm303agr",
+ "microbit",
+ "microbit-v2",
+ "panic-rtt-target",
+ "rtt-target",
+]
+
+[[package]]
 name = "led-roulette"
 version = "0.1.1"
 dependencies = [
@@ -218,6 +233,12 @@ dependencies = [
  "panic-rtt-target",
  "rtt-target",
 ]
+
+[[package]]
+name = "libm"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
 
 [[package]]
 name = "lock_api"

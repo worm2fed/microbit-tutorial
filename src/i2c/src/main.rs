@@ -5,9 +5,9 @@ use core::{fmt::Write, str};
 use cortex_m_rt::entry;
 use heapless::Vec;
 use panic_rtt_target as _;
-use rtt_target::{rprintln, rtt_init_print};
+use rtt_target::rtt_init_print;
 
-use lsm303agr::{AccelOutputDataRate, Lsm303agr};
+use lsm303agr::{AccelOutputDataRate, Lsm303agr, MagOutputDataRate};
 use microbit::hal::prelude::*;
 
 #[cfg(feature = "v1")]
@@ -72,6 +72,8 @@ fn main() -> ! {
     let mut sensor = Lsm303agr::new_with_i2c(i2c);
     sensor.init().unwrap();
     sensor.set_accel_odr(AccelOutputDataRate::Hz50).unwrap();
+    sensor.set_mag_odr(MagOutputDataRate::Hz50).unwrap();
+    let mut sensor = sensor.into_mag_continuous().ok().unwrap();
 
     let mut buffer: Vec<u8, 16> = Vec::new();
     loop {
@@ -94,7 +96,15 @@ fn main() -> ! {
                         }
                     }
                     Ok("magnetometer") => {
-                        write!(serial, "Not implemented\r\n").unwrap();
+                        if sensor.mag_status().unwrap().xyz_new_data {
+                            let data = sensor.mag_data().unwrap();
+                            write!(
+                                serial,
+                                "x = {}, y = {}, z = {}\r\n",
+                                data.x, data.y, data.z
+                            )
+                            .unwrap();
+                        }
                     }
                     Ok(command) => {
                         write!(serial, "Invalid command: {}\r\n", command)

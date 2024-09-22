@@ -3,12 +3,19 @@
 #![no_std]
 
 use cortex_m_rt::entry;
+use led::direction_to_led;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
 mod calibration;
 use crate::calibration::calc_calibration;
 use crate::calibration::calibrated_measurement;
+
+mod led;
+use led::Direction;
+
+use core::f32::consts::PI;
+use libm::atan2f;
 
 use microbit::{display::blocking::Display, hal::Timer};
 
@@ -26,10 +33,17 @@ fn main() -> ! {
     let board = microbit::Board::take().unwrap();
 
     #[cfg(feature = "v1")]
-    let i2c = { twi::Twi::new(board.TWI0, board.i2c.into(), FREQUENCY_A::K100) };
+    let i2c =
+        { twi::Twi::new(board.TWI0, board.i2c.into(), FREQUENCY_A::K100) };
 
     #[cfg(feature = "v2")]
-    let i2c = { twim::Twim::new(board.TWIM0, board.i2c_internal.into(), FREQUENCY_A::K100) };
+    let i2c = {
+        twim::Twim::new(
+            board.TWIM0,
+            board.i2c_internal.into(),
+            FREQUENCY_A::K100,
+        )
+    };
 
     let mut timer = Timer::new(board.TIMER0);
     let mut display = Display::new(board.display_pins);
@@ -47,6 +61,30 @@ fn main() -> ! {
         while !sensor.mag_status().unwrap().xyz_new_data {}
         let mut data = sensor.mag_data().unwrap();
         data = calibrated_measurement(data, &calibration);
-        rprintln!("x: {}, y: {}, z: {}", data.x, data.y, data.z);
+
+        let declanation = -1.19 * PI / 180.; // Value for Madeira
+        let theta = atan2f(data.y as f32, data.x as f32) + declanation;
+        rprintln!("theta {}", theta);
+        let direction = if theta < -7. * PI / 8. {
+            Direction::West
+        } else if theta < -5. * PI / 8. {
+            Direction::SouthWest
+        } else if theta < -3. * PI / 8. {
+            Direction::South
+        } else if theta < -PI / 8. {
+            Direction::SouthEast
+        } else if theta < PI / 8. {
+            Direction::East
+        } else if theta < 3. * PI / 8. {
+            Direction::NorthEast
+        } else if theta < 5. * PI / 8. {
+            Direction::North
+        } else if theta < 7. * PI / 8. {
+            Direction::NorthWest
+        } else {
+            Direction::West
+        };
+
+        display.show(&mut timer, direction_to_led(direction), 100);
     }
 }

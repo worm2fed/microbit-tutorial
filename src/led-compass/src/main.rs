@@ -4,6 +4,7 @@
 
 use cortex_m_rt::entry;
 use led::direction_to_led;
+use libm::sqrtf;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -61,10 +62,12 @@ fn main() -> ! {
         while !sensor.mag_status().unwrap().xyz_new_data {}
         let mut data = sensor.mag_data().unwrap();
         data = calibrated_measurement(data, &calibration);
+        let x = data.x as f32;
+        let y = data.y as f32;
+        let z = data.z as f32;
 
         let declanation = -1.19 * PI / 180.; // Value for Madeira
-        let theta = atan2f(data.y as f32, data.x as f32) + declanation;
-        rprintln!("theta {}", theta);
+        let theta = atan2f(y, x) + declanation;
         let direction = if theta < -7. * PI / 8. {
             Direction::West
         } else if theta < -5. * PI / 8. {
@@ -86,5 +89,8 @@ fn main() -> ! {
         };
 
         display.show(&mut timer, direction_to_led(direction), 100);
+
+        let magnitude = sqrtf(x * x + y * y + z * z);
+        rprintln!("Magnitude: {} nT, {} mG", magnitude, magnitude / 100.0);
     }
 }

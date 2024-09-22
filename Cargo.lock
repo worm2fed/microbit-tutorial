@@ -403,6 +403,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "punch-o-meter"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "lsm303agr",
+ "microbit",
+ "microbit-v2",
+ "nb 1.1.0",
+ "panic-rtt-target",
+ "rtt-target",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"

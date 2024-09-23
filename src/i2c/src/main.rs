@@ -30,8 +30,6 @@ mod serial_setup;
 #[cfg(feature = "v2")]
 use serial_setup::UartePort;
 
-// use lsm303agr::{AccelOutputDataRate, Lsm303agr, MagOutputDataRate};
-
 #[entry]
 fn main() -> ! {
     rtt_init_print!();

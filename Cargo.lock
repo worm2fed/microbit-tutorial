@@ -179,15 +179,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "hash32"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d60b12902ba28e2730cd37e95b8c9223af2808df9e902d4df49588d1470606"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
 name = "heapless"
 version = "0.7.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdc6457c0eb62c71aac4bc17216026d8410337c4126773b9c5daba343f17964f"
 dependencies = [
  "atomic-polyfill",
- "hash32",
+ "hash32 0.2.1",
  "rustc_version 0.4.1",
  "spin",
+ "stable_deref_trait",
+]
+
+[[package]]
+name = "heapless"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bfb9eb618601c89945a70e254898da93b13be0388091d42117462b265bb3fad"
+dependencies = [
+ "hash32 0.3.1",
  "stable_deref_trait",
 ]
 
@@ -198,10 +217,10 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "embedded-hal",
- "heapless",
+ "heapless 0.7.17",
  "lsm303agr",
- "microbit",
- "microbit-v2",
+ "microbit 0.12.0",
+ "microbit-v2 0.12.0",
  "nb 1.1.0",
  "panic-rtt-target",
  "rtt-target",
@@ -216,8 +235,8 @@ dependencies = [
  "embedded-hal",
  "libm",
  "lsm303agr",
- "microbit",
- "microbit-v2",
+ "microbit 0.12.0",
+ "microbit-v2 0.12.0",
  "panic-rtt-target",
  "rtt-target",
 ]
@@ -228,8 +247,8 @@ version = "0.1.1"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
- "microbit",
- "microbit-v2",
+ "microbit 0.12.0",
+ "microbit-v2 0.12.0",
  "panic-rtt-target",
  "rtt-target",
 ]
@@ -266,7 +285,16 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da4d152f82f7e6ad398656fb5014c32f0a134920b994c87aa1dae7ac186cee02"
 dependencies = [
- "microbit-common",
+ "microbit-common 0.12.0",
+]
+
+[[package]]
+name = "microbit"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22b772d53b18a80479fb066b72eb242bba80d217312cee590cd93e1263062827"
+dependencies = [
+ "microbit-common 0.13.0",
 ]
 
 [[package]]
@@ -282,12 +310,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "microbit-common"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45651d001be4281a6f4536c30f3d8522f231bc56fd58d5baf2c630f565d31256"
+dependencies = [
+ "embedded-hal",
+ "nrf51-hal",
+ "nrf52833-hal",
+ "tiny-led-matrix",
+]
+
+[[package]]
 name = "microbit-v2"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cddfc92e0a8b1ab364e77eecbb2a667ea292b9af875c492af472ad895f84c5a"
 dependencies = [
- "microbit-common",
+ "microbit-common 0.12.0",
+]
+
+[[package]]
+name = "microbit-v2"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9895242259950730bc112623e4a2e37345dc51ddb5fc8878c110489260d84e7"
+dependencies = [
+ "microbit-common 0.13.0",
 ]
 
 [[package]]
@@ -409,8 +458,8 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "lsm303agr",
- "microbit",
- "microbit-v2",
+ "microbit 0.12.0",
+ "microbit-v2 0.12.0",
  "nb 1.1.0",
  "panic-rtt-target",
  "rtt-target",
@@ -497,6 +546,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
+name = "snake-game"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "heapless 0.8.0",
+ "libm",
+ "lsm303agr",
+ "microbit 0.13.0",
+ "microbit-v2 0.13.0",
+ "nb 1.1.0",
+ "panic-rtt-target",
+ "rtt-target",
+ "tiny-led-matrix",
+]
+
+[[package]]
 name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -541,9 +607,9 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "embedded-hal",
- "heapless",
- "microbit",
- "microbit-v2",
+ "heapless 0.7.17",
+ "microbit 0.12.0",
+ "microbit-v2 0.12.0",
  "nb 1.1.0",
  "panic-rtt-target",
  "rtt-target",

@@ -1,6 +1,7 @@
 #![no_main]
 #![no_std]
 
+mod controls;
 mod game;
 
 use cortex_m_rt::entry;
@@ -12,7 +13,8 @@ use microbit::{
 use panic_rtt_target as _;
 use rtt_target::rtt_init_print;
 
-use crate::game::{Game, GameStatus, Turn};
+use crate::controls::{get_turn, init_buttons};
+use crate::game::{Game, GameStatus};
 
 #[entry]
 fn main() -> ! {
@@ -23,6 +25,7 @@ fn main() -> ! {
     let mut game = Game::new(rng.random_u32());
     let mut display = Display::new(board.display_pins);
 
+    init_buttons(board.GPIOTE, board.buttons);
     loop {
         // Game loop
         loop {
@@ -32,7 +35,7 @@ fn main() -> ! {
             display.show(&mut timer, image, game.step_len_ms());
             match game.status {
                 // Placeholder as we haven't implemented controls yet
-                GameStatus::Ongoing => game.step(Turn::None),
+                GameStatus::Ongoing => game.step(get_turn(true)),
                 _ => {
                     for _ in 0..3 {
                         display.clear();
